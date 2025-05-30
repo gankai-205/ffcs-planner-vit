@@ -33,19 +33,20 @@
 
     <nav class="bg-white shadow-md p-4 flex items-center justify-between sticky top-0 z-50 dark:bg-gray-800 dark:text-gray-100">
         <div class="flex items-center">
-            <img src="assets/logo.png" alt="Logo" class="h-8 w-8 mr-3"> <h1 class="text-2xl font-bold text-blue-600 dark:text-blue-400">FFCS Planner++</h1>
+            <img src="assets/logo.png" alt="Logo" class="h-8 w-8 mr-3">
+            <h1 class="text-2xl font-bold text-blue-600 dark:text-blue-400">FFCS Planner++</h1>
         </div>
         <div class="flex items-center space-x-4">
-            <select id="campus-select" class="p-2 border border-gray-300 rounded-md bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+            <select id="campus-select" class="p-2 border border-gray-300 rounded-md bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <option value="vellore">Vellore Campus</option>
-                </select>
+            </select>
 
-            <button id="advanced-view-btn" class="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition-colors duration-200">
+            <button id="advanced-view-btn" class="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2">
                 Advanced View
             </button>
 
-            <button id="theme-toggle" class="p-2 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200">
-               ☀️ / 🌙
+            <button id="theme-toggle" class="p-2 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2">
+                ☀️ / 🌙
             </button>
         </div>
     </nav>
@@ -59,44 +60,29 @@
             <div class="lg:col-span-1 bg-white p-6 rounded-lg shadow-lg dark:bg-gray-800">
                 <h2 class="text-2xl font-semibold mb-6 text-gray-800 dark:text-gray-100">Add Course</h2>
 
-                <form id="course-form">
-                    <div class="mb-4">
-                        <label for="school-select" class="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-300">School:</label>
-                        <select id="school-select" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
-                            <option value="">Select School...</option>
-                            <option value="SCORE">SCORE</option>
-                            <option value="SCOPE">SCOPE</option>
-                            <option value="SENSE">SENSE</option>
-                            <option value="SBST">SBST</option>
-                            <option value="SMEC">SMEC</option>
-                            <option value="SCHEME">SCHEME</option>
-                            <option value="SELECT">SELECT</option>
-                        </select>
-                    </div>
-
+                <form id="course-form" class="space-y-4">
                     <div class="mb-4">
                         <label for="course-select" class="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-300">Course:</label>
                         <select id="course-select" disabled class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
-                            <option value="">Select Subject...</option>
-                        </select>
+                            <option value="">Select Course...</option>
+                            </select>
                     </div>
 
-                    <div id="slot-faculty-section" class="hidden">
+                    <div id="slot-faculty-section" class="hidden space-y-4">
                         <div class="mb-4">
                             <label for="slot-select" class="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-300">Slot:</label>
                             <select id="slot-select" disabled class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
                                 <option value="">Select Slot...</option>
-                            </select>
+                                </select>
                         </div>
 
                         <div class="mb-6">
                             <label for="faculty-select" class="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-300">Faculty:</label>
                             <select id="faculty-select" disabled class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
                                 <option value="">Select Faculty...</option>
-                            </select>
+                                </select>
                         </div>
                     </div>
-
 
                     <button type="submit" id="add-course-btn" disabled class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
                         Add Course
@@ -120,7 +106,8 @@
                                     <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Faculty</th>
                                     <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Venue</th>
                                     <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Credits</th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Actions</th> </tr>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Actions</th>
+                                </tr>
                             </thead>
                             <tbody id="timetable-table-body" class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
                                 <tr>
@@ -147,14 +134,14 @@
                     <div class="col-span-1 p-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-b border-gray-300 dark:border-gray-600">Sun</div>
                     </div>
 
-                <div class="flex justify-center space-x-4 mt-8">
-                    <button id="save-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-colors duration-200">
+                <div class="flex justify-center space-x-4 mt-8 flex-wrap">
+                    <button id="save-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 mb-4 md:mb-0">
                         💾 Save
                     </button>
-                    <button id="download-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-colors duration-200">
+                    <button id="download-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 mb-4 md:mb-0">
                         ⬇️ Download Timetable
                     </button>
-                    <button id="share-btn" class="bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-bold py-3 px-6 rounded-lg shadow-md transition-colors duration-200">
+                    <button id="share-btn" class="bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-bold py-3 px-6 rounded-lg shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2">
                         📤 Share
                     </button>
                 </div>
@@ -162,23 +149,19 @@
         </div>
     </div>
 
-    <div id="advanced-view-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 hidden">
-        <div class="bg-white p-8 rounded-lg shadow-xl w-11/12 max-w-2xl dark:bg-gray-800 dark:text-gray-100">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-2xl font-bold">Advanced Slot Details (Editable)</h3>
-                <button id="close-advanced-modal" class="text-gray-500 hover:text-gray-700 text-3xl font-bold dark:text-gray-400 dark:hover:text-gray-200">&times;</button>
+    <div id="advanced-view-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 hidden p-4">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-11/12 max-w-2xl dark:bg-gray-800 dark:text-gray-100 relative">
+            <button id="close-advanced-modal" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-3xl font-bold dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 rounded-full">&times;</button>
+            <h3 class="text-2xl font-bold mb-4">Advanced Slot Details (Editable)</h3>
+            <p class="text-gray-600 dark:text-gray-300 mb-4">
+                Here you can see and edit the specific slot times, venues, and potentially assign specific faculty members more directly.
+                (Implementation for editing will come later).
+            </p>
+            <div id="advanced-timetable-details" class="bg-gray-50 p-4 rounded-lg max-h-96 overflow-y-auto dark:bg-gray-700 border border-gray-200 dark:border-gray-600">
+                <p class="text-gray-500 dark:text-gray-400">Details for added courses will appear here.</p>
             </div>
-            <div class="mb-4">
-                <p class="text-gray-600 dark:text-gray-300 mb-4">
-                    Here you can see and edit the specific slot times, venues, and potentially assign specific faculty members more directly.
-                    (Implementation for editing will come later).
-                </p>
-                <div id="advanced-timetable-details" class="bg-gray-50 p-4 rounded-lg max-h-96 overflow-y-auto dark:bg-gray-700">
-                    <p class="text-gray-500 dark:text-gray-400">Details for added courses will appear here.</p>
-                    </div>
-            </div>
-            <div class="text-right">
-                <button id="advanced-modal-save" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">Save Changes</button>
+            <div class="text-right mt-6">
+                <button id="advanced-modal-save" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Save Changes</button>
             </div>
         </div>
     </div>
