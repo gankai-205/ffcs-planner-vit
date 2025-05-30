@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FFCS Planner++</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Optional: Custom styles or overrides for specific elements not easily handled by Tailwind */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+        }
+        /* Basic transition for theme changes */
+        html.dark body {
+            background-color: #1a202c; /* Dark background */
+            color: #e2e8f0; /* Light text */
+        }
+        html.light body {
+            background-color: #f7fafc; /* Light background */
+            color: #2d3748; /* Dark text */
+        }
+        /* You can add more specific transitions or custom styles here if needed */
+        .grid-timetable > div {
+            min-height: 80px; /* Adjust cell height */
+        }
+        .scrollable-content {
+            max-height: calc(100vh - 120px); /* Adjust based on navbar/footer height */
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 transition-colors duration-300">
+
+    <nav class="bg-white shadow-md p-4 flex items-center justify-between sticky top-0 z-50 dark:bg-gray-800 dark:text-gray-100">
+        <div class="flex items-center">
+            <img src="assets/logo.png" alt="Logo" class="h-8 w-8 mr-3"> <h1 class="text-2xl font-bold text-blue-600 dark:text-blue-400">FFCS Planner++</h1>
+        </div>
+        <div class="flex items-center space-x-4">
+            <select id="campus-select" class="p-2 border border-gray-300 rounded-md bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                <option value="vellore">Vellore Campus</option>
+                </select>
+
+            <button id="advanced-view-btn" class="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition-colors duration-200">
+                Advanced View
+            </button>
+
+            <button id="theme-toggle" class="p-2 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200">
+               ☀️ / 🌙
+            </button>
+        </div>
+    </nav>
+
+    <div class="container mx-auto p-6 md:p-8">
+        <p class="text-center text-lg italic text-gray-600 my-8 dark:text-gray-300">
+            “For Students, With Love 📚💙”
+        </p>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-1 bg-white p-6 rounded-lg shadow-lg dark:bg-gray-800">
+                <h2 class="text-2xl font-semibold mb-6 text-gray-800 dark:text-gray-100">Add Course</h2>
+
+                <form id="course-form">
+                    <div class="mb-4">
+                        <label for="school-select" class="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-300">School:</label>
+                        <select id="school-select" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                            <option value="">Select School...</option>
+                            <option value="SCORE">SCORE</option>
+                            <option value="SCOPE">SCOPE</option>
+                            <option value="SENSE">SENSE</option>
+                            <option value="SBST">SBST</option>
+                            <option value="SMEC">SMEC</option>
+                            <option value="SCHEME">SCHEME</option>
+                            <option value="SELECT">SELECT</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="course-select" class="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-300">Course:</label>
+                        <select id="course-select" disabled class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                            <option value="">Select Subject...</option>
+                        </select>
+                    </div>
+
+                    <div id="slot-faculty-section" class="hidden">
+                        <div class="mb-4">
+                            <label for="slot-select" class="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-300">Slot:</label>
+                            <select id="slot-select" disabled class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                                <option value="">Select Slot...</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-6">
+                            <label for="faculty-select" class="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-300">Faculty:</label>
+                            <select id="faculty-select" disabled class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                                <option value="">Select Faculty...</option>
+                            </select>
+                        </div>
+                    </div>
+
+
+                    <button type="submit" id="add-course-btn" disabled class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                        Add Course
+                    </button>
+                    <p id="error-message" class="text-red-500 text-sm mt-2 text-center hidden">This slot overlaps with an existing course!</p>
+                </form>
+
+                <div class="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg text-center dark:bg-blue-900 dark:border-blue-700 dark:text-blue-200">
+                    <h3 class="text-lg font-semibold text-blue-700 dark:text-blue-300">Total Credits: <span id="total-credits" class="font-bold">0</span></h3>
+                </div>
+
+                <div class="mt-8">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">Your Schedule</h3>
+                    <div id="slot-breakdown-table-container" class="overflow-x-auto bg-gray-50 p-4 rounded-lg border border-gray-200 dark:bg-gray-700 dark:border-gray-600 scrollable-content">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+                            <thead class="bg-gray-100 dark:bg-gray-600">
+                                <tr>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Slot</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Code</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Title</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Faculty</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Venue</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Credits</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Actions</th> </tr>
+                            </thead>
+                            <tbody id="timetable-table-body" class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+                                <tr>
+                                    <td colspan="7" class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 text-center dark:text-gray-400">
+                                        No courses added yet.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-lg dark:bg-gray-800">
+                <h2 class="text-2xl font-semibold mb-6 text-gray-800 dark:text-gray-100">Your Timetable</h2>
+                <div id="visual-timetable" class="grid grid-cols-8 text-center text-xs sm:text-sm font-semibold mb-6 border border-gray-300 rounded-lg overflow-hidden dark:border-gray-600">
+                    <div class="col-span-1 p-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-r border-b border-gray-300 dark:border-gray-600">Time</div>
+                    <div class="col-span-1 p-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-r border-b border-gray-300 dark:border-gray-600">Mon</div>
+                    <div class="col-span-1 p-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-r border-b border-gray-300 dark:border-gray-600">Tue</div>
+                    <div class="col-span-1 p-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-r border-b border-gray-300 dark:border-gray-600">Wed</div>
+                    <div class="col-span-1 p-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-r border-b border-gray-300 dark:border-gray-600">Thu</div>
+                    <div class="col-span-1 p-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-r border-b border-gray-300 dark:border-gray-600">Fri</div>
+                    <div class="col-span-1 p-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-r border-b border-gray-300 dark:border-gray-600">Sat</div>
+                    <div class="col-span-1 p-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-b border-gray-300 dark:border-gray-600">Sun</div>
+                    </div>
+
+                <div class="flex justify-center space-x-4 mt-8">
+                    <button id="save-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-colors duration-200">
+                        💾 Save
+                    </button>
+                    <button id="download-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-colors duration-200">
+                        ⬇️ Download Timetable
+                    </button>
+                    <button id="share-btn" class="bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-bold py-3 px-6 rounded-lg shadow-md transition-colors duration-200">
+                        📤 Share
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="advanced-view-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 hidden">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-11/12 max-w-2xl dark:bg-gray-800 dark:text-gray-100">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold">Advanced Slot Details (Editable)</h3>
+                <button id="close-advanced-modal" class="text-gray-500 hover:text-gray-700 text-3xl font-bold dark:text-gray-400 dark:hover:text-gray-200">&times;</button>
+            </div>
+            <div class="mb-4">
+                <p class="text-gray-600 dark:text-gray-300 mb-4">
+                    Here you can see and edit the specific slot times, venues, and potentially assign specific faculty members more directly.
+                    (Implementation for editing will come later).
+                </p>
+                <div id="advanced-timetable-details" class="bg-gray-50 p-4 rounded-lg max-h-96 overflow-y-auto dark:bg-gray-700">
+                    <p class="text-gray-500 dark:text-gray-400">Details for added courses will appear here.</p>
+                    </div>
+            </div>
+            <div class="text-right">
+                <button id="advanced-modal-save" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
