@@ -1,706 +1,585 @@
-// script.js
+// Global variables
+let allCourseData = []; // To store all parsed data from CSV
+let selectedCourses = []; // To store courses added to the user's timetable
+let timeSlots = {}; // Define your standard time slots here if not derived from CSV
+                          // Example structure: { 'A': { days: ['Mon', 'Thu'], start: '08:00', end: '08:50' }, ... }
 
-// --- Global Data Structures ---
-// This will hold all courses, faculty, and their relationships
-const fullCourseData = {
-    SCORE: {
-        courses: [
-            { name: "Engineering Chemistry", id: "BCHY101L/P", credits: 4, type: "Theory/Lab" },
-            { name: "Computer Programming: Python", id: "BCSE101E", credits: 2, type: "Theory" },
-            { name: "Structured and Object-Oriented Programming", id: "BCSE102L/P", credits: 4, type: "Theory/Lab" },
-            { name: "Computer Programming: Java", id: "BCSE103E", credits: 2, type: "Theory" },
-            { name: "Basic Electrical and Electronics Engineering", id: "BEEE102L/P", credits: 4, type: "Theory/Lab" },
-            { name: "Technical English Communication", id: "BENG101L/P", credits: 4, type: "Theory/Lab" },
-            { name: "Technical Report Writing Lab", id: "BENG102P", credits: 1, type: "Lab" },
-            { name: "Calculus", id: "BMAT101L/P", credits: 4, type: "Theory/Lab" },
-            { name: "Differential Equations and Transforms", id: "BMAT102L", credits: 3, type: "Theory" },
-            { name: "Complex Variables and Linear Algebra", id: "BMAT201L", credits: 4, type: "Theory" },
-            { name: "Probability and Statistics", id: "BMAT202L/P", credits: 4, type: "Theory/Lab" },
-            { name: "Engineering Physics", id: "BPHY101L/P", credits: 4, type: "Theory/Lab" },
-        ],
-        faculty: new Set() // Will store unique faculty names for this school
-    },
-    SCOPE: {
-        courses: [
-            { name: "Data Structures and Algorithms", id: "BCSE202L/P", credits: 4, type: "Theory/Lab" },
-            { name: "Web Programming", id: "BCSE203E", credits: 3, type: "Theory" },
-            { name: "Design and Analysis of Algorithms", id: "BCSE204L/P", credits: 4, type: "Theory/Lab" },
-            { name: "Computer Architecture and Organization", id: "BCSE205L", credits: 3, type: "Theory" },
-            { name: "Software Engineering", id: "BCSE301L/P", credits: 4, type: "Theory/Lab" },
-            { name: "Database Systems", id: "BCSE302L/P", credits: 4, type: "Theory/Lab" },
-            { name: "Operating Systems", id: "BCSE303L/P", credits: 4, type: "Theory/Lab" },
-            { name: "Theory of Computation", id: "BCSE304L", credits: 3, type: "Theory" },
-            { name: "Embedded Systems", id: "BCSE305L", credits: 3, type: "Theory" },
-            { name: "Artificial Intelligence", id: "BCSE306L", credits: 3, type: "Theory" },
-            { name: "Computer Networks", id: "BCSE308L/P", credits: 4, type: "Theory/Lab" },
-            { name: "Cryptography and Network Security", id: "BCSE309L/P", credits: 4, type: "Theory/Lab" },
-            // AI/ML Specialization Electives
-            { name: "Machine Learning", id: "BCSE209L/P", credits: 4, type: "Theory/Lab" },
-            { name: "Compiler Design", id: "BCSE307L/P", credits: 4, type: "Theory/Lab" },
-            { name: "Deep Learning", id: "BCSE332L/P", credits: 4, type: "Theory/Lab" },
-            { name: "Computer Vision", id: "BCSE407L", credits: 3, type: "Theory" },
-            { name: "Natural Language Processing", id: "BCSE409L", credits: 3, type: "Theory" },
-            { name: "Explainable Artificial Intelligence", id: "BCSE418L", credits: 3, type: "Theory" },
-            // Discipline-linked Engineering Sciences (mapped to SCOPE if CSE-relevant)
-            { name: "Discrete Mathematics and Graph Theory", id: "BMAT205L", credits: 3, type: "Theory" },
-        ],
-        faculty: new Set()
-    },
-    SENSE: {
-        courses: [
-            // Discipline-linked Engineering Sciences (mapped to SENSE if ECE-relevant)
-            { name: "Digital Systems Design", id: "BECE102L/P", credits: 4, type: "Theory/Lab" },
-            { name: "Microprocessors and Microcontrollers", id: "BECE204L/P", credits: 4, type: "Theory/Lab" },
-        ],
-        faculty: new Set()
-    },
-    SBST: { courses: [], faculty: new Set() }, // Empty for now as no courses provided
-    SMEC: { courses: [], faculty: new Set() }, // Empty for now as no courses provided
-    SCHEME: { courses: [], faculty: new Set() }, // Empty for now as no courses provided
-    SELECT: {
-        courses: [
-            // Foreign Languages
-            { name: "Arabic", id: "BARB101L", credits: 3, type: "Theory" },
-            { name: "Chinese I", id: "BCHI101L", credits: 3, type: "Theory" },
-            { name: "Spanish I", id: "BESP101L", credits: 3, type: "Theory" },
-            { name: "French I", id: "BFRE101L", credits: 3, type: "Theory" },
-            { name: "German I", id: "BGER101L", credits: 3, type: "Theory" },
-            { name: "Modern Greek", id: "BGRE101L", credits: 3, type: "Theory" },
-            { name: "Italian", id: "BITL101L", credits: 3, type: "Theory" },
-            { name: "Japanese I", id: "BJAP101L", credits: 3, type: "Theory" },
-            { name: "Basic Korean - Level 1", id: "BKOR101L", credits: 3, type: "Theory" },
-            { name: "Basic Korean - Level 2", id: "BKOR102L", credits: 3, type: "Theory" },
-            // Humanities & Social Sciences (HSM)
-            { name: "Natural Disaster Mitigation and Management", id: "BCLE212L", credits: 3, type: "Theory" },
-            { name: "Global Warming", id: "BCLE214L", credits: 3, type: "Theory" },
-            { name: "Waste Management", id: "BCLE215L", credits: 3, type: "Theory" },
-            { name: "Water Resource Management", id: "BCLE216L", credits: 3, type: "Theory" },
-            { name: "Indian Classical Music", id: "BHUM102E", credits: 3, type: "Theory" },
-            { name: "Micro Economics", id: "BHUM103L", credits: 3, type: "Theory" },
-            { name: "Macro Economics", id: "BHUM104L", credits: 3, type: "Theory" },
-            { name: "Public Policy and Administration", id: "BHUM105L", credits: 3, type: "Theory" },
-            { name: "Principles of Sociology", id: "BHUM106L", credits: 3, type: "Theory" },
-            { name: "Sustainability and Society", id: "BHUM107L", credits: 3, type: "Theory" },
-            { name: "Urban Community Development", id: "BHUM108L", credits: 3, type: "Theory" },
-            { name: "Social Work and Sustainability", id: "BHUM109L", credits: 3, type: "Theory" },
-            { name: "Cognitive Psychology", id: "BHUM110E/L", credits: 3, type: "Theory" },
-            { name: "Welfare Economics", id: "BHUM113L", credits: 3, type: "Theory" },
-            { name: "Principles of Management", id: "BMGT101L", credits: 3, type: "Theory" },
-            { name: "Human Resource Management", id: "BMGT102L", credits: 3, type: "Theory" },
-            { name: "Organizational Behavior", id: "BMGT103L", credits: 3, type: "Theory" },
-            { name: "Marketing Management", id: "BMGT104L", credits: 3, type: "Theory" },
-            { name: "Consumer Behavior", id: "BMGT105L", credits: 3, type: "Theory" },
-            { name: "Digital Marketing", id: "BMGT106L", credits: 3, type: "Theory" },
-            { name: "Business Analytics", id: "BMGT107L", credits: 3, type: "Theory" },
-            // Quantitative/Qualitative Skills Practice
-            { name: "Quantitative Skills Practice I", id: "BSTS101P", credits: 1, type: "Practice" },
-            { name: "Quantitative Skills Practice II", id: "BSTS102P", credits: 1, type: "Practice" },
-            { name: "Qualitative Skills Practice I", id: "BSTS201P", credits: 1, type: "Practice" },
-            { name: "Qualitative Skills Practice II", id: "BSTS202P", credits: 1, type: "Practice" },
-            // Open Electives
-            { name: "Happiness and Well-being", id: "BHUM111L", credits: 3, type: "Theory" },
-            { name: "Forests and their Management", id: "CFOC191M", credits: 3, type: "Theory" },
-            { name: "Human Behaviour", id: "CFOC406M", credits: 3, type: "Theory" },
-            { name: "Conservation Economics", id: "CFOC642M", credits: 3, type: "Theory" },
-            { name: "Education for Sustainable Development", id: "CFOC692M", credits: 3, type: "Theory" },
-            { name: "Quantum Algorithms and Cryptography", id: "CFOC699M", credits: 3, type: "Theory" },
-            { name: "Literature and Life", id: "CFOC700M", credits: 3, type: "Theory" },
-            // Non-Graded Courses (Credits typically 0, but good to include for completeness)
-            { name: "Environmental Sciences", id: "BCHY102N", credits: 0, type: "Non-Graded" },
-            { name: "Introduction to Engineering", id: "BCSE101N", credits: 0, type: "Non-Graded" },
-            { name: "Ethics and Values", id: "BHUM101N", credits: 0, type: "Non-Graded" },
-            { name: "Essence of Traditional Knowledge", id: "BSSC101N", credits: 0, type: "Non-Graded" },
-            { name: "Indian Constitution", id: "BSSC102N", credits: 0, type: "Non-Graded" },
-        ],
-        faculty: new Set()
-    }
-};
+// DOM Elements (get references once for efficiency)
+const campusSelect = document.getElementById('campus-select'); // Kept for future multi-campus support
+const advancedViewBtn = document.getElementById('advanced-view-btn');
+const themeToggle = document.getElementById('theme-toggle');
 
-// Map course codes to their school (for efficient lookup from CSV)
-const courseCodeToSchoolMap = {};
-for (const schoolId in fullCourseData) {
-    fullCourseData[schoolId].courses.forEach(course => {
-        courseCodeToSchoolMap[course.id] = schoolId;
-    });
-}
-
-// Stores parsed data from CSV, mapping course code to details
-const courseDetailsFromCSV = {}; // { 'COURSE_CODE': [{ slot: 'A1', faculty: 'Dr. X', ... }, ...] }
-const allFacultyFromCSV = new Set(); // Stores all unique faculty names
-const allSlotsFromCSV = new Set(); // Stores all unique slot IDs (e.g., 'A1', 'B2')
-
-// This is where the actual slot-to-day-time mapping will go (needs your input)
-// IMPORTANT: YOU MUST POPULATE THIS MAP WITH ALL YOUR SLOTS AND THEIR TIMINGS!
-const slotTimingMap = {
-    // Example (YOU NEED TO PROVIDE THIS AND POPULATE IT BASED ON YOUR SLOTS):
-    // Use the slots you see in your CSV's 'SLOT' column and the 'All unique slots from CSV' console log.
-    // 'A1': { day: 'Mon', start: '08:00', end: '08:50', slotName: 'Monday 8:00 AM (A1)' },
-    // 'B2': { day: 'Tue', start: '09:00', end: '09:50', slotName: 'Tuesday 9:00 AM (B2)' },
-    // 'L1+L2': { day: 'Mon', start: '14:00', end: '15:50', slotName: 'Monday 2:00 PM - 3:50 PM (Lab)' },
-    // ... continue for all your possible slots ...
-
-    // Example based on common FFCS slots (you'll need to expand this based on your actual data)
-    'A1': { day: 'Mon', start: '08:00', end: '08:50', slotName: 'Mon 8:00 AM (A1)' },
-    'A2': { day: 'Wed', start: '08:00', end: '08:50', slotName: 'Wed 8:00 AM (A2)' },
-    'A3': { day: 'Thu', start: '08:00', end: '08:50', slotName: 'Thu 8:00 AM (A3)' },
-    'B1': { day: 'Tue', start: '09:00', end: '09:50', slotName: 'Tue 9:00 AM (B1)' },
-    'B2': { day: 'Thu', start: '09:00', end: '09:50', slotName: 'Thu 9:00 AM (B2)' },
-    'B3': { day: 'Fri', start: '09:00', end: '09:50', slotName: 'Fri 9:00 AM (B3)' },
-    'C1': { day: 'Mon', start: '10:00', end: '10:50', slotName: 'Mon 10:00 AM (C1)' },
-    'C2': { day: 'Wed', start: '10:00', end: '10:50', slotName: 'Wed 10:00 AM (C2)' },
-    'C3': { day: 'Fri', start: '10:00', end: '10:50', slotName: 'Fri 10:00 AM (C3)' },
-    'D1': { day: 'Tue', start: '11:00', end: '11:50', slotName: 'Tue 11:00 AM (D1)' },
-    'D2': { day: 'Thu', start: '11:00', end: '11:50', slotName: 'Thu 11:00 AM (D2)' },
-    'D3': { day: 'Mon', start: '11:00', end: '11:50', slotName: 'Mon 11:00 AM (D3)' },
-    'E1': { day: 'Mon', start: '12:00', end: '12:50', slotName: 'Mon 12:00 PM (E1)' },
-    'E2': { day: 'Wed', start: '12:00', end: '12:50', slotName: 'Wed 12:00 PM (E2)' },
-    'E3': { day: 'Fri', start: '12:00', end: '12:50', slotName: 'Fri 12:00 PM (E3)' },
-    'F1': { day: 'Tue', start: '13:00', end: '13:50', slotName: 'Tue 1:00 PM (F1)' },
-    'F2': { day: 'Thu', start: '13:00', end: '13:50', slotName: 'Thu 1:00 PM (F2)' },
-    'F3': { day: 'Wed', start: '13:00', end: '13:50', slotName: 'Wed 1:00 PM (F3)' },
-    'G1': { day: 'Mon', start: '14:00', end: '14:50', slotName: 'Mon 2:00 PM (G1)' },
-    'G2': { day: 'Wed', start: '14:00', end: '14:50', slotName: 'Wed 2:00 PM (G2)' },
-    'G3': { day: 'Fri', start: '14:00', end: '14:50', slotName: 'Fri 2:00 PM (G3)' },
-    'H1': { day: 'Tue', start: '15:00', end: '15:50', slotName: 'Tue 3:00 PM (H1)' },
-    'H2': { day: 'Thu', start: '15:00', end: '15:50', slotName: 'Thu 3:00 PM (H2)' },
-    'H3': { day: 'Mon', start: '15:00', end: '15:50', slotName: 'Mon 3:00 PM (H3)' },
-    'A1+TA1': { day: 'Mon', start: '08:00', end: '09:50', slotName: 'Mon 8:00-9:50 AM (A1+TA1)' },
-    'A2+TA2': { day: 'Wed', start: '08:00', end: '09:50', slotName: 'Wed 8:00-9:50 AM (A2+TA2)' },
-    'A3+TAA': { day: 'Thu', start: '08:00', end: '09:50', slotName: 'Thu 8:00-9:50 AM (A3+TAA)' },
-    'B1+TB1': { day: 'Tue', start: '09:00', end: '10:50', slotName: 'Tue 9:00-10:50 AM (B1+TB1)' },
-    'B2+TB2': { day: 'Thu', start: '09:00', end: '10:50', slotName: 'Thu 9:00-10:50 AM (B2+TB2)' },
-    'B3+TBB': { day: 'Fri', start: '09:00', end: '10:50', slotName: 'Fri 9:00-10:50 AM (B3+TBB)' },
-    'C1+TC1': { day: 'Mon', start: '10:00', end: '11:50', slotName: 'Mon 10:00-11:50 AM (C1+TC1)' },
-    'C2+TC2': { day: 'Wed', start: '10:00', end: '11:50', slotName: 'Wed 10:00-11:50 AM (C2+TC2)' },
-    'C3+TCC': { day: 'Fri', start: '10:00', end: '11:50', slotName: 'Fri 10:00-11:50 AM (C3+TCC)' },
-    // Lab slots (common combos)
-    'L1+L2': { day: 'Mon', start: '14:00', end: '15:50', slotName: 'Mon 2:00-3:50 PM (L1+L2 Lab)' },
-    'L3+L4': { day: 'Tue', start: '14:00', end: '15:50', slotName: 'Tue 2:00-3:50 PM (L3+L4 Lab)' },
-    'L5+L6': { day: 'Wed', start: '14:00', end: '15:50', slotName: 'Wed 2:00-3:50 PM (L5+L6 Lab)' },
-    'L7+L8': { day: 'Thu', start: '14:00', end: '15:50', slotName: 'Thu 2:00-3:50 PM (L7+L8 Lab)' },
-    'L9+L10': { day: 'Fri', start: '14:00', end: '15:50', slotName: 'Fri 2:00-3:50 PM (L9+L10 Lab)' },
-    'L11+L12': { day: 'Mon', start: '16:00', end: '17:50', slotName: 'Mon 4:00-5:50 PM (L11+L12 Lab)' },
-    // Add single lab slots if they exist and are relevant (e.g., L1, L2, etc.)
-    'L1': { day: 'Mon', start: '14:00', end: '14:50', slotName: 'Mon 2:00 PM (L1)' },
-    'L2': { day: 'Mon', start: '15:00', end: '15:50', slotName: 'Mon 3:00 PM (L2)' },
-    // You must review your specific CSV's 'SLOT' column and extend this map accordingly!
-};
-
-// --- Element References (keep these as they are) ---
-const schoolSelect = document.getElementById('school-select');
+// Form Elements
+const courseForm = document.getElementById('course-form');
 const courseSelect = document.getElementById('course-select');
+const slotFacultySection = document.getElementById('slot-faculty-section');
 const slotSelect = document.getElementById('slot-select');
 const facultySelect = document.getElementById('faculty-select');
 const addCourseBtn = document.getElementById('add-course-btn');
-const errorMessage = document.getElementById('error-message'); // For overlap messages
+const errorMessage = document.getElementById('error-message');
 const totalCreditsSpan = document.getElementById('total-credits');
+
+// Timetable Elements
 const timetableTableBody = document.getElementById('timetable-table-body');
-const slotFacultySection = document.getElementById('slot-faculty-section'); // The div containing slot & faculty dropdowns
-const advancedViewBtn = document.getElementById('advanced-view-btn');
-const advancedViewModal = document.getElementById('advanced-view-modal');
+const visualTimetable = document.getElementById('visual-timetable'); // This is the main timetable grid container
+
+// Modal Elements
+let advancedViewModal = document.getElementById('advanced-view-modal');
 const closeAdvancedModalBtn = document.getElementById('close-advanced-modal');
+const advancedModalSaveBtn = document.getElementById('advanced-modal-save');
 const advancedTimetableDetails = document.getElementById('advanced-timetable-details');
-const themeToggleBtn = document.getElementById('theme-toggle');
-const campusSelect = document.getElementById('campus-select'); // Reference to campus dropdown
 
-// --- Timetable State ---
-let userTimetable = []; // Stores courses added by the user
-let currentTotalCredits = 0; // Tracks total credits for added courses
+// Buttons
+const saveBtn = document.getElementById('save-btn');
+const downloadBtn = document.getElementById('download-btn');
+const shareBtn = document.getElementById('share-btn');
 
-// --- Helper Functions ---
 
-// Function to fetch and parse CSV data (ENHANCED FOR DIAGNOSTICS)
-async function loadCSVData() {
+/**
+ * Helper to fetch and parse CSV data.
+ * @param {string} url The URL of the CSV file.
+ * @returns {Promise<Array<Object>>} A promise that resolves with an array of parsed objects.
+ */
+async function fetchCsvData(url) {
     try {
-        const csvFilePath = 'ALL_ALLOCATION_COMPLETE .csv'; 
-        console.log(`Attempting to fetch CSV from: ${csvFilePath}`);
-
-        const response = await fetch('ALL_ALLOCATION_COMPLETE .csv'); 
-        console.log('Fetch API response status:', response.status, response.statusText);
-        console.log('Fetch response object:', response); // Log the entire response object for inspection
-
+        const response = await fetch(url);
         if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status} (${response.statusText}) while fetching '${csvFilePath}'. Please ensure the file exists at this location relative to your HTML file and that your local server (if used) is configured correctly.`);
+            // Throw an error if HTTP status is not 2xx
+            throw new Error(`HTTP error! Status: ${response.status} (${response.statusText}) while fetching '${url}'`);
         }
-
         const text = await response.text();
-        if (!text || text.trim().length === 0) {
-            throw new Error("CSV file fetched successfully but it is empty or contains only whitespace.");
-        }
-        console.log('CSV content fetched (first 200 chars):', text.substring(0, 200) + (text.length > 200 ? '...' : ''));
+        const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
 
-        const rows = text.split('\n').map(row => row.trim()).filter(row => row.length > 0);
-
-        if (rows.length === 0) {
-            throw new Error("CSV file is empty or contains no valid data rows after initial processing.");
+        if (lines.length === 0) {
+            console.warn("CSV file is empty.");
+            return [];
         }
 
-        // Trim headers to remove BOM and extra spaces
-        const headers = rows[0].split(',').map(header => header.trim());
-        // Handle BOM: if the first header starts with '﻿', remove it
-        if (headers[0].charCodeAt(0) === 65279) { // 65279 is the character code for BOM
-            headers[0] = headers[0].substring(1);
+        const headers = lines[0].split(',').map(header => header.trim());
+        const data = [];
+
+        // Identify crucial column indices
+        const courseCodeIndex = headers.indexOf('COURSE CODE');
+        const empNameIndex = headers.indexOf('EMP NAME');
+        const slotIndex = headers.indexOf('SLOT');
+        const courseTitleIndex = headers.indexOf('COURSE TITLE');
+        const venueIndex = headers.indexOf('VENUE');
+        const creditsIndex = headers.indexOf('CREDITS'); // Assuming 'CREDITS' column exists
+
+        // Basic validation for essential headers
+        if (courseCodeIndex === -1 || empNameIndex === -1 || slotIndex === -1) {
+            console.error("Error: Essential columns ('COURSE CODE', 'EMP NAME', 'SLOT') are missing in the CSV header.");
+            return [];
         }
 
-        if (headers.length === 0 || headers.every(h => h === "")) {
-            console.error("Problematic headers found:", headers);
-            throw new Error("CSV file headers row is empty, malformed, or not comma-separated. Check CSV integrity.");
-        }
-        console.log("CSV Headers:", headers);
-
-        // Clear previous CSV data if any (e.g., on a hot reload scenario)
-        Object.keys(courseDetailsFromCSV).forEach(key => delete courseDetailsFromCSV[key]);
-        allFacultyFromCSV.clear();
-        allSlotsFromCSV.clear();
-
-        for (let i = 1; i < rows.length; i++) {
-            const values = rows[i].split(',').map(value => value.trim());
-            if (values.length !== headers.length) {
-                console.warn(`Skipping malformed row ${i + 1}: Expected ${headers.length} columns, but found ${values.length}. Content: "${rows[i]}"`);
-                continue; // Skip malformed rows
-            }
-
-            const rowData = {};
+        for (let i = 1; i < lines.length; i++) {
+            const values = lines[i].split(',');
+            // Handle cases where a line might have fewer columns than expected, or empty strings
+            // Trim values to remove leading/trailing whitespace
+            const row = {};
             headers.forEach((header, index) => {
-                rowData[header] = values[index];
+                row[header] = values[index] ? values[index].trim() : '';
             });
 
-            // --- CRITICAL CHANGES HERE BASED ON YOUR CONSOLE OUTPUT ---
-            // Using the exact header names found in your console output:
-            const courseCode = rowData['COURSE CODE']; // Now, headers[0] should be "COURSE CODE" after BOM removal
-            const facultyName = rowData['EMP NAME'];   // Use 'EMP NAME' as found in your CSV
-            const slot = rowData['SLOT'];
-            const courseTitle = rowData['COURSE TITLE'];
+            // --- IMPORTANT: The check you had before for missing data ---
+            // Row number for logging (1-based, skipping header)
+            const logRowNumber = i + 1;
 
-            if (courseCode && facultyName && slot) { // Ensure essential fields are present
-                if (!courseDetailsFromCSV[courseCode]) {
-                    courseDetailsFromCSV[courseCode] = [];
-                }
-                courseDetailsFromCSV[courseCode].push({
-                    slotId: slot,
-                    facultyName: facultyName,
-                    courseTitle: courseTitle,
-                    venue: rowData['VENUE'] || "Academic Block - TBA", // Using 'VENUE' from CSV
-                });
-
-                if (facultyName && facultyName !== 'NIL') { // Check for truthiness and 'NIL'
-                    allFacultyFromCSV.add(facultyName);
-                }
-                if (slot && slot !== 'NIL') { // Check for truthiness and 'NIL'
-                    allSlotsFromCSV.add(slot);
-                }
-            } else {
-                console.warn(`Skipping row ${i + 1} due to missing 'COURSE CODE', 'EMP NAME', or 'SLOT'. Data:`, rowData);
+            if (!row['COURSE CODE'] || !row['EMP NAME'] || !row['SLOT']) {
+                console.warn(
+                    `Skipping row ${logRowNumber} due to missing 'COURSE CODE', 'EMP NAME', or 'SLOT'. Data:`,
+                    row
+                );
+                continue; // Skip this row
             }
+            // --- End of important check ---
+
+            // Normalize and parse relevant data for easier access
+            data.push({
+                courseCode: row['COURSE CODE'],
+                courseTitle: row['COURSE TITLE'] || 'N/A', // Provide default if missing
+                empName: row['EMP NAME'],
+                slot: row['SLOT'],
+                venue: row['VENUE'] || 'N/A',
+                credits: parseInt(row['CREDITS'] || '0', 10), // Convert to number, default to 0
+                originalRowData: row // Keep original row for debugging if needed
+            });
         }
-
-        // After parsing, populate faculty sets for each school
-        for (const schoolId in fullCourseData) {
-            fullCourseData[schoolId].faculty.clear(); // Clear previous faculty if any
-        }
-
-        for (const courseCode in courseDetailsFromCSV) {
-            const schoolId = courseCodeToSchoolMap[courseCode];
-            if (schoolId && fullCourseData[schoolId]) {
-                courseDetailsFromCSV[courseCode].forEach(detail => {
-                    if (detail.facultyName && detail.facultyName !== 'NIL') {
-                        fullCourseData[schoolId].faculty.add(detail.facultyName);
-                    }
-                });
-            }
-        }
-
-        console.log("CSV Data loaded and processed. Course Details from CSV:", courseDetailsFromCSV);
-        console.log("All unique faculty from CSV:", Array.from(allFacultyFromCSV).sort());
-        console.log("All unique slots from CSV:", Array.from(allSlotsFromCSV).sort());
-        console.log("Full Course Data (with faculty sets populated from CSV):", fullCourseData);
-
-        initializeForm(); // Initialize form after data is loaded
-
+        return data;
     } catch (error) {
-        console.error("----------------------------------------");
-        console.error("CRITICAL ERROR in loadCSVData function:", error);
-        console.error("Error Name:", error.name);
-        console.error("Error Message:", error.message);
-        if (error.stack) {
-            console.error("Error Stack:", error.stack);
-        }
-        console.error("----------------------------------------");
-        alert(`Failed to load or process course data. Please check the browser console (F12) for detailed error messages. Common issues: CSV file not found, incorrect CSV format, or network problems. (Error: ${error.message})`);
+        console.error("Failed to load or process course data. Please check the browser console (F12) for detailed error messages. Common issues: CSV file not found, incorrect CSV format, or network problems.", error);
+        alert("Failed to load course data. Please check console for details.");
+        return [];
     }
 }
 
+/**
+ * Populates the course dropdown with unique courses from allCourseData.
+ */
+function populateCourseDropdown() {
+    courseSelect.innerHTML = '<option value="">Select Course...</option>'; // Reset options
+    const uniqueCourses = new Set();
+    const courseMap = new Map(); // To store courseCode -> CourseTitle mapping
 
-function populateDropdown(dropdownElement, items, placeholderText, valueKey = 'id', textKey = 'name') {
-    dropdownElement.innerHTML = `<option value="">${placeholderText}</option>`;
-    if (Array.isArray(items)) {
-        items.forEach(item => {
-            const option = document.createElement('option');
-            if (typeof item === 'object' && item !== null && valueKey in item && textKey in item) {
-                option.value = item[valueKey];
-                option.textContent = item[textKey];
-                dropdownElement.appendChild(option);
-            } else if (typeof item === 'string') {
-                option.value = item;
-                option.textContent = item;
-                dropdownElement.appendChild(option);
+    allCourseData.forEach(course => {
+        if (!uniqueCourses.has(course.courseCode)) {
+            uniqueCourses.add(course.courseCode);
+            courseMap.set(course.courseCode, course.courseTitle);
+        }
+    });
+
+    // Sort unique courses by course code
+    const sortedCourseCodes = Array.from(uniqueCourses).sort();
+
+    sortedCourseCodes.forEach(code => {
+        const option = document.createElement('option');
+        option.value = code;
+        option.textContent = `${code} - ${courseMap.get(code)}`;
+        courseSelect.appendChild(option);
+    });
+
+    courseSelect.disabled = false; // Enable the course dropdown
+}
+
+/**
+ * Populates the slot and faculty dropdowns based on the selected course.
+ */
+function populateSlotAndFacultyDropdowns(selectedCourseCode) {
+    slotSelect.innerHTML = '<option value="">Select Slot...</option>';
+    facultySelect.innerHTML = '<option value="">Select Faculty...</option>';
+    slotSelect.disabled = true;
+    facultySelect.disabled = true;
+    addCourseBtn.disabled = true;
+    errorMessage.classList.add('hidden'); // Clear any previous error message
+    slotFacultySection.classList.add('hidden'); // Hide until selections are made
+
+    if (!selectedCourseCode) {
+        return;
+    }
+
+    const availableSlots = new Set();
+    const slotFacultyMap = new Map(); // slot -> [{ empName, venue }]
+
+    allCourseData
+        .filter(course => course.courseCode === selectedCourseCode)
+        .forEach(course => {
+            availableSlots.add(course.slot);
+            if (!slotFacultyMap.has(course.slot)) {
+                slotFacultyMap.set(course.slot, []);
             }
+            slotFacultyMap.get(course.slot).push({ empName: course.empName, venue: course.venue });
         });
-    }
-    dropdownElement.disabled = items.length === 0;
-}
 
+    const sortedSlots = Array.from(availableSlots).sort();
+    sortedSlots.forEach(slot => {
+        const option = document.createElement('option');
+        option.value = slot;
+        option.textContent = slot;
+        slotSelect.appendChild(option);
+    });
 
-function resetAndDisableDropdown(dropdownElement, placeholderText) {
-    dropdownElement.innerHTML = `<option value="">${placeholderText}</option>`;
-    dropdownElement.disabled = true;
-    dropdownElement.value = "";
-}
+    slotSelect.disabled = false;
+    slotFacultySection.classList.remove('hidden');
 
-function hideErrorMessage() {
-    errorMessage.classList.add('hidden');
-    errorMessage.textContent = '';
-}
-
-function showErrorMessage(message) {
-    errorMessage.textContent = message;
-    errorMessage.classList.remove('hidden');
-}
-
-
-// --- Event Listeners ---
-
-// Initialize form elements and event listeners after data is loaded
-function initializeForm() {
-    hideErrorMessage();
-
-    schoolSelect.addEventListener('change', () => {
-        const selectedSchoolId = schoolSelect.value;
-        hideErrorMessage();
-
-        resetAndDisableDropdown(courseSelect, 'Select Subject...');
-        resetAndDisableDropdown(slotSelect, 'Select Slot...');
-        resetAndDisableDropdown(facultySelect, 'Select Faculty...');
+    // Event listener for slot selection to populate faculty
+    slotSelect.onchange = () => {
+        const selectedSlot = slotSelect.value;
+        facultySelect.innerHTML = '<option value="">Select Faculty...</option>'; // Reset faculty
+        facultySelect.disabled = true;
         addCourseBtn.disabled = true;
+        errorMessage.classList.add('hidden');
 
-        if (selectedSchoolId && fullCourseData[selectedSchoolId]) {
-            const courses = fullCourseData[selectedSchoolId].courses.slice().sort((a, b) => a.name.localeCompare(b.name));
-            populateDropdown(courseSelect, courses, 'Select Subject...', 'id', 'name');
-        }
-    });
-
-    courseSelect.addEventListener('change', () => {
-        const selectedCourseCode = courseSelect.value;
-        hideErrorMessage();
-
-        resetAndDisableDropdown(slotSelect, 'Select Slot...');
-        resetAndDisableDropdown(facultySelect, 'Select Faculty...');
-        addCourseBtn.disabled = true;
-
-        if (selectedCourseCode && courseDetailsFromCSV[selectedCourseCode]) {
-            const availableSlotsForCourse = [...new Set(courseDetailsFromCSV[selectedCourseCode]
-                .filter(detail => detail.slotId && detail.slotId !== 'NIL')
-                .map(detail => detail.slotId)
-            )].sort().map(slotId => ({ id: slotId, name: slotId }));
-
-            populateDropdown(slotSelect, availableSlotsForCourse, 'Select Slot...', 'id', 'name');
-
-            const facultyForCourse = [...new Set(courseDetailsFromCSV[selectedCourseCode]
-                .filter(detail => detail.facultyName && detail.facultyName !== 'NIL')
-                .map(detail => detail.facultyName)
-            )].sort().map(facultyName => ({ id: facultyName, name: facultyName }));
-
-            populateDropdown(facultySelect, facultyForCourse, 'Select Faculty...', 'id', 'name');
-        }
-    });
-
-    slotSelect.addEventListener('change', () => {
-        checkFormValidity();
-        hideErrorMessage();
-    });
-
-    facultySelect.addEventListener('change', () => {
-        checkFormValidity();
-        hideErrorMessage();
-    });
-
-    // Theme Toggle
-    themeToggleBtn.addEventListener('click', () => {
-        document.documentElement.classList.toggle('dark');
-        if (document.documentElement.classList.contains('dark')) {
-            localStorage.setItem('theme', 'dark');
-        } else {
-            localStorage.setItem('theme', 'light');
-        }
-    });
-
-    // Apply saved theme on load
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
-        document.documentElement.classList.toggle('dark', savedTheme === 'dark');
-    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        document.documentElement.classList.add('dark');
-    }
-
-    // Advanced View Modal Toggle
-    advancedViewBtn.addEventListener('click', () => {
-        advancedViewModal.classList.remove('hidden');
-        updateAdvancedTimetableDetails();
-    });
-
-    closeAdvancedModalBtn.addEventListener('click', () => {
-        advancedViewModal.classList.add('hidden');
-    });
-
-    advancedViewModal.addEventListener('click', (e) => {
-        if (e.target === advancedViewModal) {
-            advancedViewModal.classList.add('hidden');
-        }
-    });
-}
-
-// --- Form Validation and Submission ---
-
-function checkFormValidity() {
-    if (schoolSelect.value && courseSelect.value && slotSelect.value && facultySelect.value) {
-        addCourseBtn.disabled = false;
-    } else {
-        addCourseBtn.disabled = true;
-    }
-}
-
-// Function to check for overlaps (refined with FFCS slots)
-function hasOverlap(newCourseEntry, existingTimetable) {
-    const newSlotId = newCourseEntry.slot.id;
-    const newSlotDetails = slotTimingMap[newSlotId]; // CRITICAL: slotTimingMap must be populated!
-
-    if (!newSlotDetails) {
-        console.warn(`Overlap check: Slot timing details not found for slot ID: ${newSlotId}. Assuming no overlap as a fallback, but this is not ideal. Please ensure slotTimingMap is complete.`);
-        return false; // Fallback: Allow if timing data is missing, but log a warning.
-    }
-
-    const newStart = newSlotDetails.start;
-    const newEnd = newSlotDetails.end;
-    const newDay = newSlotDetails.day;
-
-    for (const existingEntry of existingTimetable) {
-        const existingSlotDetails = slotTimingMap[existingEntry.slot.id];
-
-        if (!existingSlotDetails) {
-            console.warn(`Overlap check: Slot timing details not found for existing slot ID: ${existingEntry.slot.id}. Skipping this entry for overlap comparison.`);
-            continue;
-        }
-
-        const existingStart = existingSlotDetails.start;
-        const existingEnd = existingSlotDetails.end;
-        const existingDay = existingSlotDetails.day;
-
-        if (newDay === existingDay) {
-            if (newStart < existingEnd && existingStart < newEnd) {
-                console.log("Overlap detected with:", existingEntry);
-                return true;
+        if (selectedSlot) {
+            const facultiesForSlot = slotFacultyMap.get(selectedSlot);
+            if (facultiesForSlot) {
+                // Sort faculties by name for consistent display
+                facultiesForSlot.sort((a, b) => a.empName.localeCompare(b.empName));
+                facultiesForSlot.forEach(f => {
+                    const option = document.createElement('option');
+                    option.value = f.empName; // Store faculty name as value
+                    option.textContent = `${f.empName} (Venue: ${f.venue})`;
+                    facultySelect.appendChild(option);
+                });
+                facultySelect.disabled = false;
             }
         }
-    }
-    return false;
-}
-
-// --- Add Course Logic ---
-addCourseBtn.addEventListener('click', (event) => {
-    event.preventDefault();
-    hideErrorMessage();
-
-    const selectedSchoolId = schoolSelect.value;
-    const selectedCourseCode = courseSelect.value;
-    const selectedSlotId = slotSelect.value;
-    const selectedFacultyName = facultySelect.value;
-
-    const courseStaticData = fullCourseData[selectedSchoolId]?.courses.find(c => c.id === selectedCourseCode);
-
-    const courseOfferingDetails = courseDetailsFromCSV[selectedCourseCode]?.find(
-        offering => offering.slotId === selectedSlotId && offering.facultyName === selectedFacultyName
-    );
-
-    const courseDisplayName = courseOfferingDetails?.courseTitle || courseStaticData?.name || "Unknown Course";
-    const courseCredits = courseStaticData?.credits === undefined ? 0 : courseStaticData.credits;
-
-    if (!courseStaticData) {
-        showErrorMessage("Error: Could not find static course data. Please re-select.");
-        console.error("Add course error: Static data for course code", selectedCourseCode, "in school", selectedSchoolId, "not found.");
-        return;
-    }
-
-    const slotDetailsFromMap = slotTimingMap[selectedSlotId];
-
-    if (!slotDetailsFromMap) {
-        showErrorMessage(`Slot details for '${selectedSlotId}' are not defined in slotTimingMap. Cannot add course. Please contact admin or check configuration.`);
-        console.error(`Error: Slot timing details not found for slot ID: ${selectedSlotId} in slotTimingMap. This map needs to be populated with all valid slots and their timings.`);
-        return;
-    }
-
-    const newCourseEntry = {
-        schoolId: selectedSchoolId,
-        schoolName: schoolSelect.options[schoolSelect.selectedIndex].text,
-        courseCode: selectedCourseCode,
-        courseName: courseDisplayName,
-        credits: courseCredits,
-        slot: {
-            id: selectedSlotId,
-            name: slotDetailsFromMap.slotName || selectedSlotId,
-            day: slotDetailsFromMap.day,
-            start: slotDetailsFromMap.start,
-            end: slotDetailsFromMap.end,
-        },
-        facultyName: selectedFacultyName,
-        venue: courseOfferingDetails?.venue || "Academic Block - TBA"
     };
 
-    if (hasOverlap(newCourseEntry, userTimetable)) {
-        showErrorMessage(`SLOT CLASH: '${newCourseEntry.slot.name}' for ${newCourseEntry.courseName} overlaps with an existing course in your timetable!`);
-        console.warn("Overlap detected. Course not added:", newCourseEntry);
-        return;
-    }
-
-    userTimetable.push(newCourseEntry);
-    currentTotalCredits += newCourseEntry.credits;
-
-    console.log("Course added. Current Timetable:", userTimetable);
-    console.log("Total Credits:", currentTotalCredits);
-
-    updateTimetableDisplay();
-    updateTotalCreditsDisplay();
-    updateAdvancedTimetableDetails();
-
-    resetAndDisableDropdown(courseSelect, 'Select Subject...');
-    resetAndDisableDropdown(slotSelect, 'Select Slot...');
-    resetAndDisableDropdown(facultySelect, 'Select Faculty...');
-    addCourseBtn.disabled = true;
-    if (selectedSchoolId) schoolSelect.value = selectedSchoolId;
-});
+    // Enable Add Course button only when all fields are selected
+    facultySelect.onchange = () => {
+        if (courseSelect.value && slotSelect.value && facultySelect.value) {
+            addCourseBtn.disabled = false;
+        } else {
+            addCourseBtn.disabled = true;
+        }
+        errorMessage.classList.add('hidden');
+    };
+}
 
 
-// --- Display Updates ---
+/**
+ * Renders the user's schedule in the table and visual timetable.
+ */
+function renderTimetable() {
+    timetableTableBody.innerHTML = '';
+    let currentTotalCredits = 0; // Use a local variable here
 
-function updateTimetableDisplay() {
-    const tableBody = document.getElementById('timetable-table-body');
-    if (!tableBody) {
-        console.error("Timetable table body not found!");
-        return;
-    }
-
-    if (userTimetable.length === 0) {
-        tableBody.innerHTML = `
-            <tr>
-                <td colspan="7" class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 text-center dark:text-gray-400">
-                    No courses added yet. Select school, subject, slot, and faculty to add a course.
-                </td>
-            </tr>
-        `;
+    if (selectedCourses.length === 0) {
+        timetableTableBody.innerHTML = `<tr>
+            <td colspan="7" class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 text-center dark:text-gray-400">
+                No courses added yet.
+            </td>
+        </tr>`;
     } else {
-        tableBody.innerHTML = userTimetable.map((entry, index) => `
-            <tr class="${index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-700'}">
-                <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">${entry.slot.name || entry.slot.id}</td>
-                <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">${entry.courseCode}</td>
-                <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">${entry.courseName}</td>
-                <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">${entry.facultyName}</td>
-                <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">${entry.venue}</td>
-                <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300 text-center">${entry.credits}</td>
+        selectedCourses.forEach((course, index) => {
+            currentTotalCredits += course.credits; // Use the local variable
+            const row = document.createElement('tr');
+            row.classList.add('hover:bg-gray-50', 'dark:hover:bg-gray-700');
+            row.innerHTML = `
+                <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">${course.slot}</td>
+                <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">${course.courseCode}</td>
+                <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">${course.courseTitle}</td>
+                <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">${course.empName}</td>
+                <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">${course.venue}</td>
+                <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">${course.credits}</td>
                 <td class="px-4 py-2 whitespace-nowrap text-right text-sm font-medium">
                     <button data-index="${index}" class="remove-course-btn text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200">Remove</button>
                 </td>
-            </tr>
-        `).join('');
+            `;
+            timetableTableBody.appendChild(row);
+        });
 
-        document.querySelectorAll('#timetable-table-body .remove-course-btn').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const indexToRemove = parseInt(e.target.dataset.index);
-                removeCourse(indexToRemove);
-            });
+        // Add event listeners for remove buttons
+        document.querySelectorAll('.remove-course-btn').forEach(button => {
+            button.onclick = (event) => {
+                const indexToRemove = parseInt(event.target.dataset.index);
+                selectedCourses.splice(indexToRemove, 1);
+                renderTimetable(); // Re-render after removal
+                // No need to call renderVisualTimetable() separately here, as renderTimetable() already calls it.
+            };
         });
     }
+
+    totalCreditsSpan.textContent = currentTotalCredits; // Update total credits
+    renderVisualTimetable(); // Always re-render visual timetable
 }
 
-function removeCourse(index) {
-    if (index >= 0 && index < userTimetable.length) {
-        const removedCourse = userTimetable.splice(index, 1)[0];
-        currentTotalCredits -= removedCourse.credits;
-        if (currentTotalCredits < 0) currentTotalCredits = 0;
 
-        updateTimetableDisplay();
-        updateTotalCreditsDisplay();
-        updateAdvancedTimetableDetails();
-        hideErrorMessage();
-        console.log("Course removed:", removedCourse);
-        console.log("Current Timetable:", userTimetable);
+/**
+ * Renders the visual timetable grid. This is a complex function
+ * and might need detailed mapping of slots to days/times based on your data.
+ * For now, this is a placeholder. You'll need actual slot-to-time mapping.
+ */
+function renderVisualTimetable() {
+    // Clear previous timetable cells, except for header
+    // Select all divs that are not the first row (the header)
+    const existingContentCells = visualTimetable.querySelectorAll('div:not(.col-span-1):not(:first-child):not([id^="time-label-"])');
+    existingContentCells.forEach(cell => cell.remove());
+
+
+    // Example fixed times (you'd generate these dynamically or from a config)
+    const times = [
+        "08:00 - 08:50", "09:00 - 09:50", "10:00 - 10:50", "11:00 - 11:50",
+        "12:00 - 12:50", "13:00 - 13:50", "14:00 - 14:50", "15:00 - 15:50",
+        "16:00 - 16:50", "17:00 - 17:50"
+    ];
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+    // Placeholder: You need to map actual slots (like A, B, C, TA, TB, L1+L2, etc.)
+    // to their specific day(s) and time(s) to populate the grid.
+    // This mapping usually comes from a separate configuration or is derived from your CSV data.
+    // For demonstration, let's assume a dummy mapping for a few common slots.
+    // **IMPORTANT: YOU NEED TO DEFINE THIS MAP ACCURATELY FOR YOUR FFCS SLOTS**
+    const slotToTimeDayMap = {
+        'A': [{ day: 'Mon', timeIndex: 0 }, { day: 'Thu', timeIndex: 0 }],
+        'B': [{ day: 'Tue', timeIndex: 0 }, { day: 'Fri', timeIndex: 0 }],
+        'C': [{ day: 'Wed', timeIndex: 0 }, { day: 'Sat', timeIndex: 0 }],
+        'D': [{ day: 'Mon', timeIndex: 1 }, { day: 'Thu', timeIndex: 1 }],
+        'E': [{ day: 'Tue', timeIndex: 1 }, { day: 'Fri', timeIndex: 1 }],
+        'F': [{ day: 'Wed', timeIndex: 1 }, { day: 'Sat', timeIndex: 1 }],
+        'G': [{ day: 'Mon', timeIndex: 2 }, { day: 'Thu', timeIndex: 2 }],
+        'TA': [{ day: 'Tue', timeIndex: 2 }], // Example for lab/tutorial slots
+        'TB': [{ day: 'Wed', timeIndex: 2 }],
+        // Add more mappings as per your FFCS slot structure (e.g., 'L1+L2', 'L31+L32', etc.)
+        // Example for combined slots like L1+L2. This might take up multiple time slots/cells visually.
+        // You'll need logic to handle merging cells or placing content in multiple cells.
+        // For simplicity, this example just places it in the first time slot.
+        'L1+L2': [{ day: 'Mon', timeIndex: 3 }],
+        'L31+L32': [{ day: 'Tue', timeIndex: 3 }],
+    };
+
+
+    // Clear all content cells and re-initialize the grid layout
+    // We already have the header row from HTML. We need to add time labels and content cells below it.
+    // Remove all cells that are not header cells to redraw
+    const existingGridContent = visualTimetable.querySelectorAll('.grid-timetable-content-cell');
+    existingGridContent.forEach(cell => cell.remove());
+
+
+    // Append time labels and empty cells
+    for (let t = 0; t < times.length; t++) {
+        // Add time labels
+        const timeCell = document.createElement('div');
+        timeCell.className = 'col-span-1 p-2 border-r border-b border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-200 grid-timetable-time-label';
+        timeCell.textContent = times[t];
+        visualTimetable.appendChild(timeCell); // Append to the main grid container
+
+        for (let d = 0; d < days.length; d++) {
+            const cell = document.createElement('div');
+            cell.id = `cell-${days[d]}-${t}`; // Unique ID for each cell
+            cell.className = 'col-span-1 p-2 border-r border-b border-gray-300 dark:border-gray-600 flex items-center justify-center text-center overflow-hidden h-full min-h-[80px] text-gray-400 dark:text-gray-600 grid-timetable-content-cell';
+            cell.textContent = ''; // Empty initially
+            visualTimetable.appendChild(cell); // Append to the main grid container
+        }
     }
+
+
+    // Populate cells with selected courses
+    selectedCourses.forEach(course => {
+        const { courseCode, slot, empName } = course;
+
+        // Iterate through the assumed slot-to-timeDay mapping
+        if (slotToTimeDayMap[slot]) {
+            slotToTimeDayMap[slot].forEach(mapping => {
+                const day = mapping.day;
+                const timeIndex = mapping.timeIndex;
+
+                const targetCell = document.getElementById(`cell-${day}-${timeIndex}`); // Get cell by its ID
+
+                if (targetCell) {
+                    // Check if cell already has content (for overlap visualization)
+                    if (targetCell.children.length > 0) {
+                        // If there's an overlap, you might want to change the background to red
+                        // or display a warning. For simplicity, just append to existing content.
+                        const existingContent = targetCell.innerHTML;
+                        targetCell.innerHTML = `
+                            ${existingContent}
+                            <div class="bg-red-200 dark:bg-red-700 text-red-800 dark:text-red-100 rounded-md p-1 w-full h-full flex flex-col justify-center items-center text-xs sm:text-sm overflow-hidden mt-1">
+                                <span class="font-bold">${courseCode}</span>
+                                <span class="text-xs">${slot}</span>
+                                <span class="text-xs">${empName.split(' ')[0]}</span>
+                                <span class="text-xxs text-red-600">(OVERLAP!)</span>
+                            </div>
+                        `;
+                    } else {
+                        targetCell.innerHTML = `
+                            <div class="bg-blue-200 dark:bg-blue-700 text-blue-800 dark:text-blue-100 rounded-md p-1 w-full h-full flex flex-col justify-center items-center text-xs sm:text-sm overflow-hidden">
+                                <span class="font-bold">${courseCode}</span>
+                                <span class="text-xs">${slot}</span>
+                                <span class="text-xs">${empName.split(' ')[0]}</span>
+                            </div>
+                        `;
+                    }
+                    targetCell.classList.remove('text-gray-400', 'dark:text-gray-600'); // Remove empty placeholder styling
+                }
+            });
+        } else {
+            console.warn(`Slot '${slot}' not found in visual timetable mapping. Course ${courseCode} not displayed.`);
+        }
+    });
 }
 
-function updateTotalCreditsDisplay() {
-    totalCreditsSpan.textContent = currentTotalCredits;
+
+/**
+ * Checks for slot overlaps. This function needs to be robust for FFCS slots.
+ * @param {string} newSlot The slot of the new course.
+ * @returns {boolean} True if there's an overlap, false otherwise.
+ */
+function checkForOverlap(newSlot) {
+    // **IMPORTANT**: This is a simplified overlap check.
+    // For a real FFCS system, you need a precise mapping of
+    // every slot (e.g., A, B, L1+L2, TA) to its exact days and times.
+    // Then you would compare the time blocks.
+
+    // A simple check: if any existing course has the exact same slot string, it's an overlap.
+    // This assumes each unique slot string represents a unique, non-overlapping time block.
+    // This will catch basic overlaps but might miss complex ones (e.g., L1 overlapping with a half-slot).
+    return selectedCourses.some(c => c.slot === newSlot);
 }
 
-function updateAdvancedTimetableDetails() {
-    const detailsContainer = advancedTimetableDetails;
-    if (!detailsContainer) return;
+// --- Event Listeners ---
 
-    if (userTimetable.length === 0) {
-        detailsContainer.innerHTML = '<p class="text-gray-500 dark:text-gray-400">Details for added courses will appear here.</p>';
+// Initialize campus select (no change needed here)
+campusSelect.addEventListener('change', () => {
+    // Logic for changing campus and re-loading data if necessary
+    // For now, assuming only "Vellore Campus" is active.
+    console.log('Campus changed to:', campusSelect.value);
+});
+
+
+// Course selection change
+courseSelect.addEventListener('change', () => {
+    populateSlotAndFacultyDropdowns(courseSelect.value);
+});
+
+// Add Course form submission
+courseForm.addEventListener('submit', (event) => {
+    event.preventDefault(); // Prevent default form submission
+
+    const selectedCourseCode = courseSelect.value;
+    const selectedSlot = slotSelect.value;
+    const selectedFaculty = facultySelect.value;
+
+    if (!selectedCourseCode || !selectedSlot || !selectedFaculty) {
+        errorMessage.textContent = "Please select course, slot, and faculty.";
+        errorMessage.classList.remove('hidden');
         return;
     }
 
-    detailsContainer.innerHTML = userTimetable.map((entry, index) => `
-        <div class="mb-4 p-3 border border-gray-200 rounded-md dark:border-gray-600 ${index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-700'}">
-            <h4 class="font-bold text-gray-900 dark:text-gray-100">${entry.courseName} (${entry.courseCode})</h4>
-            <p class="text-sm text-gray-700 dark:text-gray-300">
-                Slot: <span class="font-semibold">${entry.slot.name || entry.slot.id}</span>
-                (Day: ${entry.slot.day}, Time: ${entry.slot.start} - ${entry.slot.end})
-            </p>
-            <p class="text-sm text-gray-700 dark:text-gray-300">Faculty: ${entry.facultyName}</p>
-            <p class="text-sm text-gray-700 dark:text-gray-300">Credits: ${entry.credits}</p>
-            <p class="text-sm text-gray-700 dark:text-gray-300">Venue: ${entry.venue}</p>
-            <button data-index="${index}" class="remove-course-btn mt-2 text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200 text-xs">Remove</button>
-        </div>
-    `).join('');
-}
+    // Find the exact course details from allCourseData
+    const courseToAdd = allCourseData.find(course =>
+        course.courseCode === selectedCourseCode &&
+        course.slot === selectedSlot &&
+        course.empName === selectedFaculty
+    );
 
-
-// --- Initial Load Logic ---
-document.addEventListener('DOMContentLoaded', () => {
-    // Initialize display elements even before CSV load, so UI doesn't look broken.
-    if (schoolSelect) schoolSelect.value = ""; // Reset school dropdown
-    resetAndDisableDropdown(courseSelect, 'Select Subject...');
-    resetAndDisableDropdown(slotSelect, 'Select Slot...');
-    resetAndDisableDropdown(facultySelect, 'Select Faculty...');
-    if (addCourseBtn) addCourseBtn.disabled = true;
-    updateTimetableDisplay(); // Show "No courses added" message initially
-    updateTotalCreditsDisplay();
-    updateAdvancedTimetableDetails();
-
-
-    // IMPORTANT: Delay CSV loading slightly if many DOM manipulations happen before
-    // or ensure that all critical DOM elements are definitely ready.
-    // For now, direct load is fine.
-    loadCSVData(); // Load CSV data when the DOM is ready
+    if (courseToAdd) {
+        if (checkForOverlap(courseToAdd.slot)) {
+            errorMessage.textContent = "This slot overlaps with an existing course in your schedule!";
+            errorMessage.classList.remove('hidden');
+        } else {
+            selectedCourses.push(courseToAdd);
+            renderTimetable();
+            errorMessage.classList.add('hidden'); // Hide error if successful
+            // Reset form for next entry
+            courseSelect.value = ''; // Reset course dropdown
+            slotSelect.innerHTML = '<option value="">Select Slot...</option>'; // Clear slots
+            facultySelect.innerHTML = '<option value="">Select Faculty...</option>'; // Clear faculties
+            slotSelect.disabled = true;
+            facultySelect.disabled = true;
+            addCourseBtn.disabled = true;
+            slotFacultySection.classList.add('hidden'); // Hide section again
+            saveTimetableToLocalStorage(); // Save schedule after adding a course
+        }
+    } else {
+        errorMessage.textContent = "Could not find selected course details. Please try again.";
+        errorMessage.classList.remove('hidden');
+    }
 });
 
-// --- Placeholder Buttons ---
-// Make sure these elements exist in your HTML
-const downloadBtn = document.getElementById('download-btn');
-const shareBtn = document.getElementById('share-btn');
-const saveBtn = document.getElementById('save-btn');
+// Theme Toggle
+themeToggle.addEventListener('click', () => {
+    document.documentElement.classList.toggle('dark');
+    // Store preference in localStorage
+    if (document.documentElement.classList.contains('dark')) {
+        localStorage.setItem('theme', 'dark');
+    } else {
+        localStorage.setItem('theme', 'light');
+    }
+});
 
-if (downloadBtn) {
-    downloadBtn.addEventListener('click', () => {
-        alert('Download functionality coming soon!');
-    });
+// Advanced View Modal
+advancedViewBtn.addEventListener('click', () => {
+    advancedViewModal.classList.remove('hidden');
+    // Populate advanced timetable details
+    if (selectedCourses.length > 0) {
+        advancedTimetableDetails.innerHTML = '<h4>Currently Selected Courses:</h4>';
+        selectedCourses.forEach(course => {
+            const p = document.createElement('p');
+            p.textContent = `${course.courseCode} (${course.slot}) - ${course.courseTitle} by ${course.empName} @ ${course.venue}`;
+            advancedTimetableDetails.appendChild(p);
+        });
+    } else {
+        advancedTimetableDetails.innerHTML = '<p class="text-gray-500 dark:text-gray-400">No courses added yet for advanced view.</p>';
+    }
+});
+
+closeAdvancedModalBtn.addEventListener('click', () => {
+    advancedViewModal.classList.add('hidden');
+});
+
+// Close modal when clicking outside of it
+window.addEventListener('click', (event) => {
+    if (event.target === advancedViewModal) {
+        advancedViewModal.classList.add('hidden');
+    }
+});
+
+advancedModalSaveBtn.addEventListener('click', () => {
+    // Implement save logic for advanced view if editing was enabled
+    alert('Advanced view save not implemented yet!');
+    advancedViewModal.classList.add('hidden');
+});
+
+/**
+ * Saves the current selected courses to local storage.
+ */
+function saveTimetableToLocalStorage() {
+    try {
+        localStorage.setItem('ffcsPlannerSchedule', JSON.stringify(selectedCourses));
+        console.log("Schedule saved to local storage.");
+    } catch (e) {
+        console.error("Error saving schedule to local storage:", e);
+        alert("Could not save schedule to local storage. Browser storage might be full or disabled.");
+    }
 }
-if (shareBtn) {
-    shareBtn.addEventListener('click', () => {
-        alert('Share functionality coming soon!');
-    });
+
+/**
+ * Loads the saved schedule from local storage.
+ */
+function loadTimetableFromLocalStorage() {
+    const savedSchedule = localStorage.getItem('ffcsPlannerSchedule');
+    if (savedSchedule) {
+        try {
+            selectedCourses = JSON.parse(savedSchedule);
+            console.log("Schedule loaded from local storage.");
+        } catch (e) {
+            console.error("Error parsing saved schedule from local storage:", e);
+            localStorage.removeItem('ffcsPlannerSchedule'); // Clear corrupt data
+            selectedCourses = []; // Start with an empty schedule
+        }
+    }
 }
-if (saveBtn) {
-    saveBtn.addEventListener('click', () => {
-        alert('Save functionality coming soon!');
-    });
-}
+
+// Save, Download, Share buttons
+saveBtn.addEventListener('click', () => {
+    saveTimetableToLocalStorage();
+    alert('Timetable saved to your browser!');
+});
+
+downloadBtn.addEventListener('click', () => {
+    // Implement download functionality (e.g., generate PDF or image)
+    alert('Download functionality coming soon!');
+    // Example: generate a simple text file
+    const textContent = selectedCourses.map(c =>
+        `Course Code: ${c.courseCode}\nCourse Title: ${c.courseTitle}\nSlot: ${c.slot}\nFaculty: ${c.empName}\nVenue: ${c.venue}\nCredits: ${c.credits}\n---`
+    ).join('\n');
+    const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'FFCS_Timetable.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+});
+
+shareBtn.addEventListener('click', () => {
+    // Implement share functionality (e.g., generate a shareable URL, though this needs backend)
+    alert('Share functionality coming soon!');
+});
+
+
+// --- Initialization ---
+document.addEventListener('DOMContentLoaded', async () => {
+    // Apply saved theme preference
+    if (localStorage.getItem('theme') === 'dark') {
+        document.documentElement.classList.add('dark');
+    } else {
+        document.documentElement.classList.remove('dark');
+    }
+
+    // Load data from CSV
+    // **** IMPORTANT: Change this path to your CSV file name! ****
+    // You uploaded 'ALL_ALLOCATION_COMPLETE (1).csv', so use that.
+    allCourseData = await fetchCsvData('ALL_ALLOCATION_COMPLETE (1).csv');
+
+    if (allCourseData.length > 0) {
+        populateCourseDropdown();
+        loadTimetableFromLocalStorage(); // Load existing schedule after data is ready
+        renderTimetable(); // Initial render of the schedule
+    } else {
+        console.error("No course data loaded. Cannot populate dropdowns.");
+    }
+
+    renderVisualTimetable(); // Initial render of empty/default visual timetable grid
+});
