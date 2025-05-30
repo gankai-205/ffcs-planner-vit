@@ -212,10 +212,10 @@ let currentTotalCredits = 0; // Tracks total credits for added courses
 // Function to fetch and parse CSV data (ENHANCED FOR DIAGNOSTICS)
 async function loadCSVData() {
     try {
-        const csvFilePath = 'WINSEM2024-25_ALL_ALLOCATION_COMPLETE.csv'; // CORRECTED FILENAME HERE
+        const csvFilePath = 'ALL_ALLOCATION_COMPLETE .csv'; 
         console.log(`Attempting to fetch CSV from: ${csvFilePath}`);
 
-        const response = await fetch(csvFilePath);
+        const response = await fetch('ALL_ALLOCATION_COMPLETE .csv'); 
         console.log('Fetch API response status:', response.status, response.statusText);
         console.log('Fetch response object:', response); // Log the entire response object for inspection
 
