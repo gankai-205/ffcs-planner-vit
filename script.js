@@ -40,7 +40,7 @@ const shareBtn = document.getElementById('share-btn');
  * @param {string} url The URL of the CSV file.
  * @returns {Promise<Array<Object>>} A promise that resolves with an array of parsed objects.
  */
-async function fetchCsvData('./all_allocation_complete.csv') {
+async function fetchCsvData(`./all_allocation_complete.csv`) {
     try {
         const response = await fetch(url);
         if (!response.ok) {
