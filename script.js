@@ -60,15 +60,15 @@ async function fetchCsvData(url) {
 
         // Identify crucial column indices
         const courseCodeIndex = headers.indexOf('COURSE CODE');
-        const empNameIndex = headers.indexOf('EMP NAME');
+        const empNameIndex = headers.indexOf('EMPLOYEE NAME');
         const slotIndex = headers.indexOf('SLOT');
         const courseTitleIndex = headers.indexOf('COURSE TITLE');
         const venueIndex = headers.indexOf('VENUE');
         const creditsIndex = headers.indexOf('CREDITS'); // Assuming 'CREDITS' column exists
 
         // Basic validation for essential headers
-        if (courseCodeIndex === -1 || empNameIndex === -1 || slotIndex === -1) {
-            console.error("Error: Essential columns ('COURSE CODE', 'EMP NAME', 'SLOT') are missing in the CSV header.");
+        if (courseCodeIndex === -1 || employeeNameIndex === -1 || slotIndex === -1) {
+            console.error("Error: Essential columns ('COURSE CODE', 'EMPLOYEE NAME', 'SLOT') are missing in the CSV header.");
             return [];
         }
 
@@ -85,9 +85,9 @@ async function fetchCsvData(url) {
             // Row number for logging (1-based, skipping header)
             const logRowNumber = i + 1;
 
-            if (!row['COURSE CODE'] || !row['EMP NAME'] || !row['SLOT']) {
+            if (!row['COURSE CODE'] || !row['EMPLOYEE NAME'] || !row['SLOT']) {
                 console.warn(
-                    `Skipping row ${logRowNumber} due to missing 'COURSE CODE', 'EMP NAME', or 'SLOT'. Data:`,
+                    `Skipping row ${logRowNumber} due to missing 'COURSE CODE', 'EMPLOYEE NAME', or 'SLOT'. Data:`,
                     row
                 );
                 continue; // Skip this row
@@ -98,7 +98,7 @@ async function fetchCsvData(url) {
             data.push({
                 courseCode: row['COURSE CODE'],
                 courseTitle: row['COURSE TITLE'] || 'N/A', // Provide default if missing
-                empName: row['EMP NAME'],
+                empName: row['EMPLOYEE NAME'],
                 slot: row['SLOT'],
                 venue: row['VENUE'] || 'N/A',
                 credits: parseInt(row['CREDITS'] || '0', 10), // Convert to number, default to 0
@@ -167,7 +167,7 @@ function populateSlotAndFacultyDropdowns(selectedCourseCode) {
             if (!slotFacultyMap.has(course.slot)) {
                 slotFacultyMap.set(course.slot, []);
             }
-            slotFacultyMap.get(course.slot).push({ empName: course.empName, venue: course.venue });
+            slotFacultyMap.get(course.slot).push({ employeeName: course.employeeName, venue: course.venue });
         });
 
     const sortedSlots = Array.from(availableSlots).sort();
@@ -193,11 +193,11 @@ function populateSlotAndFacultyDropdowns(selectedCourseCode) {
             const facultiesForSlot = slotFacultyMap.get(selectedSlot);
             if (facultiesForSlot) {
                 // Sort faculties by name for consistent display
-                facultiesForSlot.sort((a, b) => a.empName.localeCompare(b.empName));
+                facultiesForSlot.sort((a, b) => a.employeeName.localeCompare(b.employeeName));
                 facultiesForSlot.forEach(f => {
                     const option = document.createElement('option');
-                    option.value = f.empName; // Store faculty name as value
-                    option.textContent = `${f.empName} (Venue: ${f.venue})`;
+                    option.value = f.employeeName; // Store faculty name as value
+                    option.textContent = `${f.employeeName} (Venue: ${f.venue})`;
                     facultySelect.appendChild(option);
                 });
                 facultySelect.disabled = false;
@@ -239,7 +239,7 @@ function renderTimetable() {
                 <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">${course.slot}</td>
                 <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">${course.courseCode}</td>
                 <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">${course.courseTitle}</td>
-                <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">${course.empName}</td>
+                <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">${course.employeeName}</td>
                 <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">${course.venue}</td>
                 <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">${course.credits}</td>
                 <td class="px-4 py-2 whitespace-nowrap text-right text-sm font-medium">
@@ -336,7 +336,7 @@ function renderVisualTimetable() {
 
     // Populate cells with selected courses
     selectedCourses.forEach(course => {
-        const { courseCode, slot, empName } = course;
+        const { courseCode, slot, employeeName } = course;
 
         // Iterate through the assumed slot-to-timeDay mapping
         if (slotToTimeDayMap[slot]) {
@@ -357,7 +357,7 @@ function renderVisualTimetable() {
                             <div class="bg-red-200 dark:bg-red-700 text-red-800 dark:text-red-100 rounded-md p-1 w-full h-full flex flex-col justify-center items-center text-xs sm:text-sm overflow-hidden mt-1">
                                 <span class="font-bold">${courseCode}</span>
                                 <span class="text-xs">${slot}</span>
-                                <span class="text-xs">${empName.split(' ')[0]}</span>
+                                <span class="text-xs">${employeeName.split(' ')[0]}</span>
                                 <span class="text-xxs text-red-600">(OVERLAP!)</span>
                             </div>
                         `;
@@ -366,7 +366,7 @@ function renderVisualTimetable() {
                             <div class="bg-blue-200 dark:bg-blue-700 text-blue-800 dark:text-blue-100 rounded-md p-1 w-full h-full flex flex-col justify-center items-center text-xs sm:text-sm overflow-hidden">
                                 <span class="font-bold">${courseCode}</span>
                                 <span class="text-xs">${slot}</span>
-                                <span class="text-xs">${empName.split(' ')[0]}</span>
+                                <span class="text-xs">${employeeName.split(' ')[0]}</span>
                             </div>
                         `;
                     }
@@ -430,7 +430,7 @@ courseForm.addEventListener('submit', (event) => {
     const courseToAdd = allCourseData.find(course =>
         course.courseCode === selectedCourseCode &&
         course.slot === selectedSlot &&
-        course.empName === selectedFaculty
+        course.employeeName === selectedFaculty
     );
 
     if (courseToAdd) {
@@ -476,7 +476,7 @@ advancedViewBtn.addEventListener('click', () => {
         advancedTimetableDetails.innerHTML = '<h4>Currently Selected Courses:</h4>';
         selectedCourses.forEach(course => {
             const p = document.createElement('p');
-            p.textContent = `${course.courseCode} (${course.slot}) - ${course.courseTitle} by ${course.empName} @ ${course.venue}`;
+            p.textContent = `${course.courseCode} (${course.slot}) - ${course.courseTitle} by ${course.employeeName} @ ${course.venue}`;
             advancedTimetableDetails.appendChild(p);
         });
     } else {
@@ -542,7 +542,7 @@ downloadBtn.addEventListener('click', () => {
     alert('Download functionality coming soon!');
     // Example: generate a simple text file
     const textContent = selectedCourses.map(c =>
-        `Course Code: ${c.courseCode}\nCourse Title: ${c.courseTitle}\nSlot: ${c.slot}\nFaculty: ${c.empName}\nVenue: ${c.venue}\nCredits: ${c.credits}\n---`
+        `Course Code: ${c.courseCode}\nCourse Title: ${c.courseTitle}\nSlot: ${c.slot}\nFaculty: ${c.employeeName}\nVenue: ${c.venue}\nCredits: ${c.credits}\n---`
     ).join('\n');
     const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
     const a = document.createElement('a');
