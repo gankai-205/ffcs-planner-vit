@@ -571,7 +571,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Load data from CSV
     // **** IMPORTANT: Change this path to your CSV file name! ****
     // You uploaded 'ALL_ALLOCATION_COMPLETE (1).csv', so use that.
-    allCourseData = await fetchCsvData('ALL_ALLOCATION_COMPLETE (1).csv');
+    allCourseData = await fetchCsvData('all_allocation_complete.csv');
 
     if (allCourseData.length > 0) {
         populateCourseDropdown();
